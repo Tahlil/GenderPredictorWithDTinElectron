@@ -4,6 +4,9 @@ const { ipcMain } = require('electron')
 let win;
 const readData = require('./Util/readData');
 const featureExtractUtil = require('./Util/decisiontreeUtilty/extractFeatureUtility');
+const calcPerformanceUtil = require('./Util/decisiontreeUtilty/testUtility');
+const conTreeUtil = require('./Util/decisiontreeUtilty/constructTreeUtility');
+
 
 class DesktopApp {
   constructor() {
@@ -63,8 +66,12 @@ class DesktopApp {
 
     setUpDTConListener(){
       ipcMain.on('construct-tree', (event, hyperParameters) => {
-        
-        event.sender.send('end-construct-tree', endResult);
+        let allData = readData.getNameToGenderData();
+        console.log(hyperParameters);
+        let minEntropy = hyperParameters.minEntropy, numberOfIteration = hyperParameters.numberOfIteration, predictors = hyperParameters.predictors;
+        let extractedFeatures = featureExtractUtil.extractFeatures(predictors, allData.columnOfNames);
+        const decisionTree = conTreeUtil.constructTree(extractedFeatures, minEntropy, numberOfIteration);
+        event.sender.send('end-construct-tree', decisionTree);
       }) 
     }
 

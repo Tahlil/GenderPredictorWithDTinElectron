@@ -63,12 +63,17 @@ extractFeatures = (features, names) => {
   let allFeatures = Object.keys(_featuresToBeExtracted);
   for (const feature of features) {
     if (allFeatures.includes(feature)) {
-      extractedFeatures.feature = {};
-      extractedFeatures.feature.attributeType = _featuresToBeExtracted[feature].attributeType;
-      extractedFeatures.feature.feature = _featuresToBeExtracted[feature].extract(names);
+      extractedFeatures[feature] = {};
+      extractedFeatures[feature].attributeType = _featuresToBeExtracted[feature].attributeType;
+      extractedFeatures[feature].data = _featuresToBeExtracted[feature].extract(names);
     } else {
-      console.log("Warning a false feature is requested!!!");
+      console.warn("Warning! A false feature was requested!!!");
     }
   }
+  //console.log(extractedFeatures);
   return extractedFeatures;
+}
+
+module.exports = {
+  extractFeatures: extractFeatures
 }

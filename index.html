@@ -45,7 +45,7 @@
               <button class="btn btn-primary text-white" id="conTree"><a href="#home" class="nav-link text-white">Construct tree</a></button>
             </li>
             <li class="nav-item">
-              <button class="btn btn-primary text-white" id="GD"><a href="#result" class="nav-link text-white">Run Test</a></button>
+              <button class="btn btn-primary text-white" id="test"><a href="#result" class="nav-link text-white">Run Test</a></button>
             </li>
           </ul>
         </div>
@@ -115,7 +115,7 @@
         <div class="col-md-4">
             <h3 class="badge badge-info">Min Entropy Threshold</h3>
             <div class="form-group">
-                <input id="lr" value="0.0001" type="number" min="0.0001" max=".01" step="0.0001"></input>
+                <input id="met" value="0.0001" type="number" min="0.0001" max=".01" step="0.0001"></input>
             </div>
         </div>
         <div class="col-md-4">
@@ -144,45 +144,44 @@
       console.log(d3);
       $("#conTree").click(function (e) { 
         e.preventDefault();
-        let numberOfData = $('#nod').val();
-        ipcRenderer.send("construct-tree", numberOfData);
-      });
-      ipcRenderer.on("asynchronous-reply", (event, data) => {
-        plotData(data);
-      });
-
-      $("#GD").click(function (e) { 
-        e.preventDefault();
         var predictors = [];
         $.each($("input[name='optcheck']:checked"), function(){            
-          favorite.push($(this).val());
+          predictors.push($(this).val());
         });
         if(predictors.length < 2){
           alert("Choose at least two predictors") 
         }
         else{
           hyperParameters = {};
-        hyperParameters.numberOfIteration = $('#noi').val();
-        hyperParameters.learningRate =  $('#lr').val();
-        hyperParameters.selectedMethod = predictors;
-        ipcRenderer.send("construct-tree", hyperParameters);
+          hyperParameters.numberOfIteration = parseInt($('#noi').val());
+          hyperParameters.minEntropy =  parseFloat($('#met').val());
+          hyperParameters.predictors = predictors;
+          ipcRenderer.send("construct-tree", hyperParameters);
         }
-        
+      });
+
+      ipcRenderer.on("asynchronous-reply", (event, data) => {
+        plotData(data);
+      });
+
+      $("#test").click(function (e) { 
+        e.preventDefault();
+        ipcRenderer.send("test-data", numberOfData);
       });
       
       ipcRenderer.on("end-construct-tree", (event, res) => {
         console.log(res);
-        if(res.success){
+        //if(res.success){
           // $( "#result" ).append( "<h5>Cost function: </h5><div id='plot" + currentNumberPlot + "'></div><p> <h4>Great! Above is the cost function again each iteration. Here is the other results 🙌 </h4> <br>" + res.summary + "<p> <br>  " );
           //   var documentHeight=document.documentElement.offsetHeight;
           //   var viewportHeight=window.innerHeight;
           //   window.scrollTo(0, 2500);
           //   plotCostFunction(res.result.costs, currentNumberPlot);
           //   currentNumberPlot++;
-        }
-        else{
-          alert("Something went wrong 🤔");
-        }
+        // }
+        // else{
+        //   alert("Something went wrong 🤔");
+        // }
       });
     </script>
   </body>
