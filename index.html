@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Decision Tree</title>
+    <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    </style>
+    <link
+      rel="stylesheet"
+      href="./node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <script>
+      let $ = require("jquery");
+    </script>
+    <script>
+      require("popper.js");
+    </script>
+    <script>
+      require("bootstrap");
+    </script>
+  </head>
+  <body>
+    <nav
+      class="navbar navbar-expand-md navbar-light fixed-top mb-5"
+      id="main-nav"
+    >
+      <div class="container bg-white border border-bottom-2">
+        <a href="#home" class="navbar-brand">
+          <img src="img/DECISION-TREES.png" width="77" height="77" alt="" />
+          <h3 class="d-inline align-middle badge badge-dark p-4">Predict Gender based on name using decision tree</h3>
+        </a>
+        <button
+          class="navbar-toggler"
+          data-toggle="collapse"
+          data-target="#navbarCollapse"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse bg-light" id="navbarCollapse">
+          <ul class="navbar-nav ml-auto p-5">
+            <li class="nav-item mr-2">
+              <button class="btn btn-primary text-white" id="conTree"><a href="#home" class="nav-link text-white">Construct tree</a></button>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-primary text-white" id="GD"><a href="#result" class="nav-link text-white">Run Test</a></button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    
+<br><br><br><br><br><br><br><br>
+<div class="row pt-5">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label for="usr">Choose number of iteration:</label>
+            <input id="nod" value="100" type="number" min="100" max="10000" step="100"></input>
+        </div>
+    </div>
+  </div>
+    <!-- SHOWCASE -->
+    <section id="showcase" class="p-5 bg-light m-auto">
+      <div class="primary-overlay text-white">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <h1 class="text-dark">
+                Decision Tree Construction
+              </h1>
+              <div id="original" class="bg-dark" >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div id="result"></div>
+    <section id="tuning" class="pl-5">
+      <div class="row">
+          <h2>Options</h2>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+            <h3 class="badge badge-info">Choose the predictors</h3>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input type="checkbox" value="lastVowel" class="form-check-input" name="all">All
+              </label>
+            </div>
+            <div class="form-check">
+                <label class="form-check-label">
+                  <input type="checkbox" value="numberOfVowels" class="form-check-input" checked name="optcheck">Number Of Vowels
+                </label>
+              </div>
+              
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input type="checkbox" value="lastVowel" class="form-check-input" name="optcheck">Last Vowel
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input type="checkbox" value="firstVowel" class="form-check-input" name="optcheck">First Vowel
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input checked type="checkbox" value="length" class="form-check-input" name="optcheck">Length
+                </label>
+              </div>
+        </div>
+        <div class="col-md-4">
+            <h3 class="badge badge-info">Min Entropy Threshold</h3>
+            <div class="form-group">
+                <input id="lr" value="0.0001" type="number" min="0.0001" max=".01" step="0.0001"></input>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <h3 class="badge badge-info">Number of Iteration</h3>
+            <div class="form-group">
+                <input id="noi" value="1000" type="number" min="10" max="100000" step="10"></input>
+            </div>
+        </div>
+      </div>
+    </section>
+    <script src="node_modules/d3/dist/d3.min.js"></script>
+    <script src="view/plotTree.js"></script>
+    <script src="view/plotPerformance.js"></script>
+    <script>
+      let currentNumberPlot = 0;
+        $('input[name=all]').change(function(){
+          if($(this).is(':checked')) {
+            $.each($("input[name='optcheck']"), function(){            
+              $(this).prop('checked', true);
+            });
+          } else {
+              // Checkbox is not checked..
+          }
+        });
+      const { ipcRenderer } = require("electron");
+      console.log(d3);
+      $("#conTree").click(function (e) { 
+        e.preventDefault();
+        let numberOfData = $('#nod').val();
+        ipcRenderer.send("construct-tree", numberOfData);
+      });
+      ipcRenderer.on("asynchronous-reply", (event, data) => {
+        plotData(data);
+      });
+
+      $("#GD").click(function (e) { 
+        e.preventDefault();
+        var predictors = [];
+        $.each($("input[name='optcheck']:checked"), function(){            
+          favorite.push($(this).val());
+        });
+        if(predictors.length < 2){
+          alert("Choose at least two predictors") 
+        }
+        else{
+          hyperParameters = {};
+        hyperParameters.numberOfIteration = $('#noi').val();
+        hyperParameters.learningRate =  $('#lr').val();
+        hyperParameters.selectedMethod = predictors;
+        ipcRenderer.send("construct-tree", hyperParameters);
+        }
+        
+      });
+      
+      ipcRenderer.on("end-construct-tree", (event, res) => {
+        console.log(res);
+        if(res.success){
+          // $( "#result" ).append( "<h5>Cost function: </h5><div id='plot" + currentNumberPlot + "'></div><p> <h4>Great! Above is the cost function again each iteration. Here is the other results 🙌 </h4> <br>" + res.summary + "<p> <br>  " );
+          //   var documentHeight=document.documentElement.offsetHeight;
+          //   var viewportHeight=window.innerHeight;
+          //   window.scrollTo(0, 2500);
+          //   plotCostFunction(res.result.costs, currentNumberPlot);
+          //   currentNumberPlot++;
+        }
+        else{
+          alert("Something went wrong 🤔");
+        }
+      });
+    </script>
+  </body>
+</html>

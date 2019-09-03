@@ -4,11 +4,28 @@
   "description": "Decision Tree",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --watch * --exec \"electron .\"",
+    "load": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tahlil/GenderPredictorWithDTinElectron.git"
   },
   "author": "Tahlil",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tahlil/GenderPredictorWithDTinElectron/issues"
+  },
+  "homepage": "https://github.com/Tahlil/GenderPredictorWithDTinElectron#readme",
   "dependencies": {
-    "csvsync": "^1.2.0"
+    "csvsync": "^1.2.0",
+    "bootstrap": "^4.1.3",
+    "d3": "^5.9.7",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.4"
+  },
+  "devDependencies": {
+    "electron": "^6.0.7"
   }
 }
