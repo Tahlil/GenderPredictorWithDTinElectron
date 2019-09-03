@@ -1,0 +1,14 @@
+{
+  "name": "decisiontree",
+  "version": "1.0.0",
+  "description": "Decision Tree",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tahlil",
+  "license": "ISC",
+  "dependencies": {
+    "csvsync": "^1.2.0"
+  }
+}
