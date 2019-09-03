@@ -14,4 +14,6 @@ const getNameToGenderData = () => {
     columnOfGenders: columnOfGenders
   };  
 }
-module.exports = getNameToGenderData;
+module.exports = {
+  getNameToGenderData:getNameToGenderData
+};
