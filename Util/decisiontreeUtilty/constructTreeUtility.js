@@ -1,18 +1,31 @@
-_getAllFeaturues = (features, rows) => {
-  let allFeatures = {};
-  let className = features[features.length - 1];
-  console.log(className);
-  for (let i = 0; i < rows.length; i++) {
-    let currentClass = rows[i][className];
-    for (let i = 1; i < features.length - 1; i++) {
-      allFeatures[features[i]] = [];
+_generateAllConditionFromFeatures = (features, allDataFromFeatures) => {
+  allConditions = {};
+  for (const feature of features) {
+    allConditions[feature] = {};
+    let attributeType = allDataFromFeatures[feature].attributeType;
+    let uniqueValues = allDataFromFeatures[feature].allUniqueValues;
+    if(attributeType === 'equality'){
+      allConditions[feature]['equ'].check = (i, j) => i === j; 
+      allConditions[feature]['equ'].data = [...uniqueValues];
     }
-    console.log("Current class: ");
-    console.log(currentClass);
+    else if(attributeType === 'gt-lt'){
+      allConditions[feature]['gte'].check = (i, j) => i >= j;
+      allConditions[feature]['gte'].data = [...uniqueValues];
+      allConditions[feature]['gte'].check = (i, j) => i <= j;
+      allConditions[feature]['lte'].data = [...uniqueValues];
+    }
+    else{
+      console.warn("Unknown attribute type");
+    }
   }
-  return allFeatures;
+  return allConditions;
 };
+
 _excludeFeature = () => {
+
+};
+
+_splitDataByCondition = () => {
 
 };
 
@@ -32,14 +45,20 @@ _getAllUniqueValues = (data) => {
   return data.filter((value, index, self) => self.indexOf(value) === index);
 }
 
-constructTree = (extractedFeatures, minEntropy, numberOfIteration) => {
+constructTree = (extractedFeatures, minEntropyAllowed, numberOfIteration) => {
   let features = Object.keys(extractedFeatures);
   console.log("Features: " + features);
   for (const feature of features) {
     console.log("Total values for " + feature + " :" + extractedFeatures[feature].data.length);
-    extractedFeatures[feature].data = _getAllUniqueValues(extractedFeatures[feature].data);
-    console.log("Unique values: " + feature + " :" + extractedFeatures[feature].data.length);
+    extractedFeatures[feature].allUniqueValues = _getAllUniqueValues(extractedFeatures[feature].data);
+    console.log("Unique values: " + feature + " :" + extractedFeatures[feature].allUniqueValues.length);
   }
+  let allConditions = _generateAllConditionFromFeatures(features, extractedFeatures);
+  let currentMinEntropy = 1.1, currentIteration = 0;
+  while (currentMinEntropy < minEntropyAllowed || currentIteration > numberOfIteration) {
+    
+    currentIteration++;
+  } 
 
 }
 
