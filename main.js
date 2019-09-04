@@ -70,7 +70,7 @@ class DesktopApp {
         console.log(hyperParameters);
         let minEntropy = hyperParameters.minEntropy, numberOfIteration = hyperParameters.numberOfIteration, predictors = hyperParameters.predictors;
         let extractedFeatures = featureExtractUtil.extractFeatures(predictors, allData.columnOfNames);
-        const decisionTree = conTreeUtil.constructTree(extractedFeatures, minEntropy, numberOfIteration);
+        const decisionTree = conTreeUtil.constructTree(extractedFeatures, allData.columnOfGenders, minEntropy, numberOfIteration);
         event.sender.send('end-construct-tree', decisionTree);
       }) 
     }
