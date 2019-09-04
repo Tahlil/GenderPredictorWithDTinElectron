@@ -1,5 +1,5 @@
 const decisionTreeModel = require('../../model/treeModel');
-let currentAllConditions, decisionTree, featureData;
+let currentAllConditions, decisionTree, featureData, columnOfClasses;
 _generateAllConditionFromFeatures = (features, allDataFromFeatures) => {
   allConditions = {};
   for (const feature of features) {
@@ -32,35 +32,33 @@ _getCurrentNumberOfConditions = () => {
     let current = currentAllConditions[feature];
     let types = Object.keys(current)
     for (const type of types) {
-      if(current[type].data)
+      if (current[type].data)
         currentNumberOfConditions += current[type].data.length;
     }
-  }  
+  }
   return currentNumberOfConditions;
 }
 
 _excludeCondition = (feature, type, value) => {
-  console.log("Before excluding Current number of features: " + _getCurrentNumberOfConditions()); 
+  console.log("Before excluding Current number of features: " + _getCurrentNumberOfConditions());
   //console.log(Object.keys(currentAllConditions));
   //console.log("Current conditions: ");
-  
+
   let currentFeatureOfCond = currentAllConditions[feature][type];
   //console.log(currentFeatureOfCond);
-  
-  if(type === "equ"){
-    if(currentFeatureOfCond.data.length === 2){
+
+  if (type === "equ") {
+    if (currentFeatureOfCond.data.length === 2) {
       delete currentAllConditions[feature]
+    } else {
+      currentFeatureOfCond.data.splice(currentFeatureOfCond.data.indexOf(value), 1);
     }
-    else{
-      arr.splice(currentFeatureOfCond.data.indexOf(value), 1);  
-    }
-  }
-  else{
+  } else {
     currentAllConditions[feature][type].data = currentFeatureOfCond.data.filter(
       i => type === 'lte' ? i >= value : i <= value
-      )
+    )
   }
-  console.log("After exluding Current number of features: " + _getCurrentNumberOfConditions());  
+  console.log("After exluding Current number of features: " + _getCurrentNumberOfConditions());
 };
 
 _getNumberOfEachClasses = (rows, columnOfClass, class1, class2) => {
@@ -83,22 +81,22 @@ _calculateEntropy = (numberOfClass1, numberOfClass2) => {
   let total = numberOfClass1 + numberOfClass2;
   let class1Fraction = numberOfClass1 / total,
     class2Fraction = numberOfClass2 / total;
-  return (-1)*(class1Fraction)*Math.log2(class1Fraction) - (class2Fraction)*Math.log2(class2Fraction);
+  return (-1) * (class1Fraction) * Math.log2(class1Fraction) - (class2Fraction) * Math.log2(class2Fraction);
 };
 
-_splitByCondition = (feature, type, compareTo) => {
+_splitByCondition = (rowNumbers, feature, type, compareTo) => {
   let rowWithConditionMet = [],
     rowWithConditionNotMet = [],
     featureSpecificColumn = featureData[feature].data;
 
   //console.log("Number of rows: "+featureSpecificColumn.length);
   //console.log(currentAllConditions[feature][type]);
-  for (let index = 0; index < featureSpecificColumn.length; index++) {
-    const data = featureSpecificColumn[index];
+  for (let index = 0; index < rowNumbers.length; index++) {
+    const data = featureSpecificColumn[rowNumbers[index]];
     if (currentAllConditions[feature][type].check(data, compareTo)) {
-      rowWithConditionMet.push(index);
+      rowWithConditionMet.push(rowNumbers[index]);
     } else {
-      rowWithConditionNotMet.push(index);
+      rowWithConditionNotMet.push(rowNumbers[index]);
     }
   }
   return {
@@ -107,22 +105,22 @@ _splitByCondition = (feature, type, compareTo) => {
   }
 }
 
-_getEntropyFromRows = (rows, columnOfClass, class1, class2) => {
+_getEntropyFromRows = (rows, class1, class2) => {
   let numberOfClass1 = 0,
     numberOfClass2 = 0;
   for (const row of rows) {
-    if (columnOfClass[row] === class1) {
+    if (columnOfClasses[row] === class1) {
       numberOfClass1++;
-    } else if (columnOfClass[row] === class2) {
+    } else if (columnOfClasses[row] === class2) {
       numberOfClass2++;
     } else {
-      log.error("Wrong class name provided or something: class1: " + class1 + " class2: " + class2 + " current data: " + columnOfClass[row]);
+      log.error("Wrong class name provided or something: class1: " + class1 + " class2: " + class2 + " current data: " + columnOfClasses[row]);
     }
   }
   return _calculateEntropy(numberOfClass1, numberOfClass2);
 }
 
-_getBestConditionWithEntropy = (columnOfClass, class1, class2) => {
+_getBestConditionWithEntropy = (rowNumbers, class1, class2) => {
   let features = Object.keys(currentAllConditions);
   let bestCondition, minEntropy = 1.1,
     posNode, negNode;
@@ -133,11 +131,11 @@ _getBestConditionWithEntropy = (columnOfClass, class1, class2) => {
     for (const type of conditionTypes) {
       let allPossibleValues = currentAllConditions[feature][type].data;
       for (const value of allPossibleValues) {
-        let splitedData = _splitByCondition(feature, type, value);
+        let splitedData = _splitByCondition(rowNumbers, feature, type, value);
         let positiveRows = splitedData.positiveRows,
           negativeRows = splitedData.negativeRows;
-        let posRowsEntropy = _getEntropyFromRows(positiveRows, columnOfClass, class1, class2),
-          negRowsEntropy = _getEntropyFromRows(negativeRows, columnOfClass, class1, class2);
+        let posRowsEntropy = _getEntropyFromRows(positiveRows, class1, class2),
+          negRowsEntropy = _getEntropyFromRows(negativeRows, class1, class2);
         let numOfPosRows = positiveRows.length,
           numOfNegRows = negativeRows.length;
         let total = numOfNegRows + numOfPosRows;
@@ -165,26 +163,23 @@ _getBestConditionWithEntropy = (columnOfClass, class1, class2) => {
   const bestResult = {
     bestCondition: bestCondition,
     posNode: posNode,
-    negNode: negNode
+    negNode: negNode,
+    minEntropy: minEntropy
   }
-  console.log(" Best result: ");
+  //console.log(" Best result: ");
   // console.log(minEntropy);
   // console.log(posNode.entropy);
   // console.log(negNode.entropy);
-  console.log(bestResult.bestCondition);
+  //console.log(bestResult.bestCondition);
   return bestResult;
 }
-
-_getBestSplit = (currentMinEntropy) => {
-
-};
 
 _getAllUniqueValues = (data) => {
   return data.filter((value, index, self) => self.indexOf(value) === index);
 }
 
-_splitRoot = (columnOfClass, class1, class2) => {
-  let bestSplit = _getBestConditionWithEntropy(columnOfClass, class1, class2);
+_splitRoot = (allRows, class1, class2) => {
+  let bestSplit = _getBestConditionWithEntropy(allRows, class1, class2);
   _excludeCondition(bestSplit.bestCondition.feature, bestSplit.bestCondition.type, bestSplit.bestCondition.value);
   decisionTree.splitRoot(bestSplit.bestCondition, bestSplit.posNode, bestSplit.negNode);
 }
@@ -198,37 +193,49 @@ _initDecisionTree = (columnOfClass, class1, class2) => {
     return rows;
   })(columnOfClass.length);
   let numberOfEachClasses = _getNumberOfEachClasses(allRows, columnOfClass, class1, class2);
-  console.log(numberOfEachClasses);
+  //console.log(numberOfEachClasses);
   let numberOfClass1 = numberOfEachClasses.numberOfClass1,
     numberOfClass2 = numberOfEachClasses.numberOfClass2;
   let rootEntropy = _calculateEntropy(numberOfClass1, numberOfClass2);
-  return new decisionTreeModel(rootEntropy, allRows);
+  
+  return [new decisionTreeModel(rootEntropy, allRows), allRows]
 }
 
 constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIteration) => {
   let features = Object.keys(extractedFeatures);
+  columnOfClasses = columnOfClass;
   featureData = extractedFeatures;
   let classes = _getAllUniqueValues(columnOfClass);
   let class1 = classes[0],
     class2 = classes[1];
   console.log("Features: " + features);
-  console.log("class1: " + class1 + " class2: " + class2 + " Number Of rows: " + columnOfClass.length);;
+  console.log("class1: " + class1 + " class2: " + class2 + " Number Of rows: " + columnOfClass.length);
+  
   for (const feature of features) {
     console.log("Total values for " + feature + " :" + featureData[feature].data.length);
     featureData[feature].allUniqueValues = _getAllUniqueValues(featureData[feature].data);
     console.log("Unique values: " + feature + " :" + featureData[feature].allUniqueValues.length);
   }
-  currentAllConditions = _generateAllConditionFromFeatures(features, featureData);
-
-  decisionTree = _initDecisionTree(columnOfClass, class1, class2)
-  _splitRoot(columnOfClass, class1, class2);
-  decisionTree.printTree();
+  currentAllConditions = _generateAllConditionFromFeatures(features, featureData);let res = _initDecisionTree(columnOfClass, class1, class2);
+  decisionTree =  res[0];
+  _splitRoot(res[1], class1, class2);
   let currentMinEntropy = 1.1,
     currentIteration = 1;
-  while (currentMinEntropy < minEntropyAllowed || currentIteration > numberOfIteration || _getCurrentNumberOfConditions === 0) {
-    let bestSplit = _getBestSplit(currentAllConditions, currentMinEntropy, decisionTree);
+  numberOfIteration = 3;
+  while (currentMinEntropy > minEntropyAllowed && currentIteration < numberOfIteration && _getCurrentNumberOfConditions() !== 0) {
+    let nodeToExpand = decisionTree.getExpandableWithHighestEntropy();
+    console.log("Length of node to be expanded: " + nodeToExpand.rowNumbers.length);
+    let bestSplit = _getBestConditionWithEntropy(nodeToExpand.rowNumbers, class1, class2);
+    _excludeCondition(bestSplit.bestCondition.feature, bestSplit.bestCondition.type, bestSplit.bestCondition.value);
+    // console.log("Best split:::");
+    // console.log(bestSplit);
+    decisionTree.expandNode(nodeToExpand, bestSplit.bestCondition, bestSplit.posNode, bestSplit.negNode);
+    currentMinEntropy = bestSplit.minEntropy;
+    console.log("Node to expand: " + nodeToExpand.path);
     currentIteration++;
   }
+  decisionTree.printTree();
+
 }
 
 module.exports = {

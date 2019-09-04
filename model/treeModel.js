@@ -23,7 +23,8 @@ class TreeModel{
   }
 
   _printBasicInfoOfANode(node){
-    console.log("Node Level: " + node.path.length +" name: " + node.name  +" Entropy: " + node.entropy + " Total data: " + node.rowNumbers.length);    
+    console.log("Node Level: " + node.path.length +" name: " + node.name  +" Entropy: " + node.entropy + " Total data: " + node.rowNumbers.length+ " Condition: ");
+    console.log(node.condition);
   }
 
   printTree(){
@@ -52,7 +53,13 @@ class TreeModel{
   }
 
   expandNode(node, bestCondition, rightNode, leftNode){
-
+    node.rowNumbers = [];
+    node.condition = bestCondition;
+    this.expandableNodePaths.splice(this.expandableNodePaths.indexOf(node.path), 1);  
+    let newExpandables = [node.path+"0", node.path+"1"]
+    this.expandableNodePaths = [...this.expandableNodePaths, ...newExpandables]; 
+    node.children[0] = this._newNode(node.name, newExpandables[0], leftNode.rows, leftNode.entropy);
+    node.children[1] = this._newNode(node.name, newExpandables[1], rightNode.rows, rightNode.entropy)
   }
 
   getNextNodeNumber(){
@@ -61,17 +68,17 @@ class TreeModel{
   }
 
   getExpandableWithHighestEntropy(){
-    let maxEntropy = -1.1, expandableWithMaxEntropy;
+    let maxEntropy = -1.1, expandableNodeWithMaxEntropy;
     for (const path of this.expandableNodePaths) {
-      let node = _findNode(path);
+      let node = this._findNode(path);
       let currentNodeEntropy = node.entropy;
       if(currentNodeEntropy>maxEntropy){
         maxEntropy = currentNodeEntropy
-        expandableWithMaxEntropy = node;  
+        expandableNodeWithMaxEntropy = node;  
       }
     }
-    console.log("Max entropy: " + maxEntropy);
-    return expandableWithMaxEntropy;
+    //console.log("Max entropy: " + maxEntropy);
+    return expandableNodeWithMaxEntropy;
   }
 
   _findNode(path){
