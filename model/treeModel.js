@@ -10,7 +10,29 @@ class TreeModel{
       children: []
     }];
     this.currentNodeNumber = 0;
-    this.expandableNodePaths = ["0"];
+    this.expandableNodePaths = [];
+  }
+
+  printTree(){
+    console.log(this.decisionTree);
+  }
+
+  _newNode(parent, rows, entropy){
+    return {
+      name: this.getNextNodeNumber, //root
+      parent: parent,
+      condition: null,
+      rowNumbers: [...rows],
+      entropy: entropy,
+      children: []
+    }
+  }
+
+  splitRoot(bestCondition, rightNode, leftNode){
+    this.expandableNodePaths = ["0", "1"];
+    this.decisionTree[0].condition = bestCondition;
+    this.decisionTree[0].children[0] = this._newNode(0, leftNode.rows, leftNode.entropy);
+    this.decisionTree[0].children[1] = this._newNode(0, rightNode.rows, rightNode.entropy)
   }
 
   getNextNodeNumber(){
@@ -42,7 +64,6 @@ class TreeModel{
     }
     return node;
   }
-  
 }
 
 module.exports = TreeModel;

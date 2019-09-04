@@ -49,7 +49,7 @@ _excludeCondition = (feature, type, value) => {
   
   if(type === "equ"){
     if(currentFeatureOfCond.data.length === 2){
-      delete currentAllConditions[feature][type]
+      delete currentAllConditions[feature]
     }
     else{
       arr.splice(currentFeatureOfCond.data.indexOf(value), 1);  
@@ -183,10 +183,10 @@ _getAllUniqueValues = (data) => {
   return data.filter((value, index, self) => self.indexOf(value) === index);
 }
 
-_splitRoot = (unsplittedTree, columnOfClass, class1, class2) => {
+_splitRoot = (columnOfClass, class1, class2) => {
   let bestSplit = _getBestConditionWithEntropy(columnOfClass, class1, class2);
   _excludeCondition(bestSplit.bestCondition.feature, bestSplit.bestCondition.type, bestSplit.bestCondition.value);
-  return unsplittedTree;
+  decisionTree.splitRoot(bestSplit.bestCondition, bestSplit.posNode, bestSplit.negNode);
 }
 
 _initDecisionTree = (columnOfClass, class1, class2) => {
@@ -202,8 +202,7 @@ _initDecisionTree = (columnOfClass, class1, class2) => {
   let numberOfClass1 = numberOfEachClasses.numberOfClass1,
     numberOfClass2 = numberOfEachClasses.numberOfClass2;
   let rootEntropy = _calculateEntropy(numberOfClass1, numberOfClass2);
-  let unsplittedTree = new decisionTreeModel(rootEntropy, allRows);
-  return _splitRoot(unsplittedTree, columnOfClass, class1, class2);
+  return new decisionTreeModel(rootEntropy, allRows);
 }
 
 constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIteration) => {
@@ -222,9 +221,10 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
   currentAllConditions = _generateAllConditionFromFeatures(features, featureData);
 
   decisionTree = _initDecisionTree(columnOfClass, class1, class2)
+  _splitRoot(columnOfClass, class1, class2);
   let currentMinEntropy = 1.1,
     currentIteration = 1;
-  while (currentMinEntropy < minEntropyAllowed || currentIteration > numberOfIteration) {
+  while (currentMinEntropy < minEntropyAllowed || currentIteration > numberOfIteration || _getCurrentNumberOfConditions === 0) {
     let bestSplit = _getBestSplit(currentAllConditions, currentMinEntropy, decisionTree);
     currentIteration++;
   }
