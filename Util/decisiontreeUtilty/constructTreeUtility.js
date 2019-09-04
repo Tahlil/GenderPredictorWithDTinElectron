@@ -24,8 +24,43 @@ _generateAllConditionFromFeatures = (features, allDataFromFeatures) => {
   return allConditions;
 };
 
-_excludeCondition = () => {
+_getCurrentNumberOfConditions = () => {
+  let currentNumberOfConditions = 0;
+  let features = Object.keys(currentAllConditions);
+  console.log("Current number of features: " + features.length);
+  for (const feature of features) {
+    let current = currentAllConditions[feature];
+    let types = Object.keys(current)
+    for (const type of types) {
+      if(current[type].data)
+        currentNumberOfConditions += current[type].data.length;
+    }
+  }  
+  return currentNumberOfConditions;
+}
 
+_excludeCondition = (feature, type, value) => {
+  console.log("Before excluding Current number of features: " + _getCurrentNumberOfConditions()); 
+  //console.log(Object.keys(currentAllConditions));
+  //console.log("Current conditions: ");
+  
+  let currentFeatureOfCond = currentAllConditions[feature][type];
+  //console.log(currentFeatureOfCond);
+  
+  if(type === "equ"){
+    if(currentFeatureOfCond.data.length === 2){
+      delete currentAllConditions[feature][type]
+    }
+    else{
+      arr.splice(currentFeatureOfCond.data.indexOf(value), 1);  
+    }
+  }
+  else{
+    currentAllConditions[feature][type].data = currentFeatureOfCond.data.filter(
+      i => type === 'lte' ? i >= value : i <= value
+      )
+  }
+  console.log("After exluding Current number of features: " + _getCurrentNumberOfConditions());  
 };
 
 _getNumberOfEachClasses = (rows, columnOfClass, class1, class2) => {
@@ -48,7 +83,7 @@ _calculateEntropy = (numberOfClass1, numberOfClass2) => {
   let total = numberOfClass1 + numberOfClass2;
   let class1Fraction = numberOfClass1 / total,
     class2Fraction = numberOfClass2 / total;
-  return -(class1Fraction) * Math.log2(class1Fraction) - (class2Fraction) * Math.log2(class2Fraction);
+  return (-1)*(class1Fraction)*Math.log2(class1Fraction) - (class2Fraction)*Math.log2(class2Fraction);
 };
 
 _splitByCondition = (feature, type, compareTo) => {
@@ -73,15 +108,15 @@ _splitByCondition = (feature, type, compareTo) => {
 }
 
 _getEntropyFromRows = (rows, columnOfClass, class1, class2) => {
-  let numberOfClass1=0, numberOfClass2=0;
+  let numberOfClass1 = 0,
+    numberOfClass2 = 0;
   for (const row of rows) {
     if (columnOfClass[row] === class1) {
       numberOfClass1++;
     } else if (columnOfClass[row] === class2) {
       numberOfClass2++;
-    }
-    else{
-      log.error("Wrong class name provided or something: class1: " + class1 + " class2: "+class2+ " current data: " + columnOfClass[row]);
+    } else {
+      log.error("Wrong class name provided or something: class1: " + class1 + " class2: " + class2 + " current data: " + columnOfClass[row]);
     }
   }
   return _calculateEntropy(numberOfClass1, numberOfClass2);
@@ -106,6 +141,7 @@ _getBestConditionWithEntropy = (columnOfClass, class1, class2) => {
         let numOfPosRows = positiveRows.length,
           numOfNegRows = negativeRows.length;
         let total = numOfNegRows + numOfPosRows;
+        //console.log("Total: " + total);
         let netEntropy = ((numOfPosRows / total) * posRowsEntropy) + ((numOfNegRows / total) * negRowsEntropy);
         if (netEntropy < minEntropy) {
           minEntropy = netEntropy;
@@ -135,7 +171,7 @@ _getBestConditionWithEntropy = (columnOfClass, class1, class2) => {
   // console.log(minEntropy);
   // console.log(posNode.entropy);
   // console.log(negNode.entropy);
-  console.log(bestResult);
+  console.log(bestResult.bestCondition);
   return bestResult;
 }
 
@@ -148,7 +184,8 @@ _getAllUniqueValues = (data) => {
 }
 
 _splitRoot = (unsplittedTree, columnOfClass, class1, class2) => {
-  _getBestConditionWithEntropy(columnOfClass, class1, class2);
+  let bestSplit = _getBestConditionWithEntropy(columnOfClass, class1, class2);
+  _excludeCondition(bestSplit.bestCondition.feature, bestSplit.bestCondition.type, bestSplit.bestCondition.value);
   return unsplittedTree;
 }
 
