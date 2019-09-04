@@ -29,10 +29,15 @@ _excludeCondition = () => {
 
 };
 
-_getNumberOfEachClasses = (rows) => {
-  let numberOfClass1, numberOfClass2;
+_getNumberOfEachClasses = (rows, columnOfClass, class1, class2) => {
+  let numberOfClass1=0, numberOfClass2=0;
   for (const row of rows) {
-    
+    if(columnOfClass[row] === class1){
+      numberOfClass1++;
+    }
+    else if(columnOfClass[row] === class2){
+      numberOfClass2++;
+    }
   }
   return {
     numberOfClass1: numberOfClass1,
@@ -70,7 +75,9 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
     return rows;
   })(columnOfClass.length);
   console.log("class1: " + class1 + " class2: " + class2 + " Number Of rows: " + allRows.length);
-  let numberOfEachClasses = _getNumberOfEachClasses(allRows, columnOfClass);
+  let numberOfEachClasses = _getNumberOfEachClasses(allRows, columnOfClass, class1, class2);
+  console.log(numberOfEachClasses);
+  
   let numberOfClass1 = numberOfEachClasses.numberOfClass1, numberOfClass2 = numberOfEachClasses.numberOfClass2;
   let rootEntropy = _calculateEntropy(numberOfClass1, numberOfClass2);
   decisionTree = new decisionTreeModel(rootEntropy, allRows);
