@@ -222,6 +222,7 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
 
   decisionTree = _initDecisionTree(columnOfClass, class1, class2)
   _splitRoot(columnOfClass, class1, class2);
+  decisionTree.printTree();
   let currentMinEntropy = 1.1,
     currentIteration = 1;
   while (currentMinEntropy < minEntropyAllowed || currentIteration > numberOfIteration || _getCurrentNumberOfConditions === 0) {
