@@ -44,7 +44,6 @@ class DesktopApp {
     
     setUpApp(){
       this.app.on('ready', this.createWindow)
-    
       this.app.on('window-all-closed', () => {
         if (process.platform !== 'darwin') {
           this.app.quit()
@@ -67,10 +66,11 @@ class DesktopApp {
     setUpDTConListener(){
       ipcMain.on('construct-tree', (event, hyperParameters) => {
         let allData = readData.getNameToGenderData();
-        console.log(hyperParameters);
+        //console.log(hyperParameters);
         let minEntropy = hyperParameters.minEntropy, numberOfIteration = hyperParameters.numberOfIteration, predictors = hyperParameters.predictors;
         let extractedFeatures = featureExtractUtil.extractFeatures(predictors, allData.columnOfNames);
         const decisionTree = conTreeUtil.constructTree(extractedFeatures, allData.columnOfGenders, minEntropy, numberOfIteration);
+        console.log("sending to UI...");
         event.sender.send('end-construct-tree', decisionTree);
       }) 
     }

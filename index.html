@@ -53,14 +53,6 @@
     </nav>
     
 <br><br><br><br><br><br><br><br>
-<div class="row pt-5">
-    <div class="col-md-12">
-        <div class="form-group">
-            <label for="usr">Choose number of iteration:</label>
-            <input id="nod" value="100" type="number" min="100" max="10000" step="100"></input>
-        </div>
-    </div>
-  </div>
     <!-- SHOWCASE -->
     <section id="showcase" class="p-5 bg-light m-auto">
       <div class="primary-overlay text-white">
@@ -87,7 +79,7 @@
             <h3 class="badge badge-info">Choose the predictors</h3>
             <div class="form-check">
               <label class="form-check-label">
-                <input type="checkbox" value="lastVowel" class="form-check-input" name="all">All
+                <input type="checkbox" value="all" class="form-check-input" name="all">All
               </label>
             </div>
             <div class="form-check">
@@ -121,12 +113,12 @@
         <div class="col-md-4">
             <h3 class="badge badge-info">Number of Iteration</h3>
             <div class="form-group">
-                <input id="noi" value="1000" type="number" min="10" max="100000" step="10"></input>
+                <input id="noi" value="10" type="number" min="10" max="100" step="10"></input>
             </div>
         </div>
       </div>
     </section>
-    <script src="node_modules/d3/dist/d3.min.js"></script>
+    <script>var d3 = require("d3");</script>
     <script src="view/plotTree.js"></script>
     <script src="view/plotPerformance.js"></script>
     <script>
@@ -140,8 +132,14 @@
               // Checkbox is not checked..
           }
         });
+        $('input[name=optcheck]').change(function(){
+          if(!$(this).is(':checked')) {
+              $('input[name=all]').prop('checked', false);
+          } else {
+              // Checkbox is  checked..
+          }
+        });
       const { ipcRenderer } = require("electron");
-      console.log(d3);
       $("#conTree").click(function (e) { 
         e.preventDefault();
         var predictors = [];
@@ -169,8 +167,9 @@
         ipcRenderer.send("test-data", numberOfData);
       });
       
-      ipcRenderer.on("end-construct-tree", (event, res) => {
-        console.log(res);
+      ipcRenderer.on("end-construct-tree", (event, decisionTree) => {
+        console.log("plot Tree will be called:");
+        plotTree(decisionTree);
         //if(res.success){
           // $( "#result" ).append( "<h5>Cost function: </h5><div id='plot" + currentNumberPlot + "'></div><p> <h4>Great! Above is the cost function again each iteration. Here is the other results 🙌 </h4> <br>" + res.summary + "<p> <br>  " );
           //   var documentHeight=document.documentElement.offsetHeight;

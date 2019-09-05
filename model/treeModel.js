@@ -1,17 +1,21 @@
 class TreeModel{
   decisionTree;
   constructor(rootEntropy, allRows) {
-    this.decisionTree = [{
-      name: 0, //root
+    this.decisionTree = {
+      "name": 0, //root
       parent: null,
-      condition: null,
+      "condition": null,
       path: "",
       rowNumbers: [...allRows],
       entropy: rootEntropy,
-      children: []
-    }];
+      "children": []
+    };
     this.currentNodeNumber = 0;
     this.expandableNodePaths = [];
+  }
+
+  getTree(){
+    return this.decisionTree;
   }
 
   _recursivelyPrintNodeAndChildren(node){    
@@ -28,7 +32,7 @@ class TreeModel{
   }
 
   printTree(){
-    this._recursivelyPrintNodeAndChildren(this.decisionTree[0]);
+    this._recursivelyPrintNodeAndChildren(this.decisionTree);
   }
 
   _newNode(parent, path, rows, entropy){
@@ -46,10 +50,10 @@ class TreeModel{
 
   splitRoot(bestCondition, rightNode, leftNode){
     this.expandableNodePaths = ["0", "1"];
-    this.decisionTree[0].condition = bestCondition;
-    this.decisionTree[0].rowNumbers = [];
-    this.decisionTree[0].children[0] = this._newNode(0, "0", leftNode.rows, leftNode.entropy);
-    this.decisionTree[0].children[1] = this._newNode(0, "1", rightNode.rows, rightNode.entropy)
+    this.decisionTree.condition = bestCondition;
+    this.decisionTree.rowNumbers = [];
+    this.decisionTree.children[0] = this._newNode(0, "0", leftNode.rows, leftNode.entropy);
+    this.decisionTree.children[1] = this._newNode(0, "1", rightNode.rows, rightNode.entropy)
   }
 
   expandNode(node, bestCondition, rightNode, leftNode){
@@ -82,7 +86,7 @@ class TreeModel{
   }
 
   _findNode(path){
-    let rootChildren = this.decisionTree[0].children, node;
+    let rootChildren = this.decisionTree.children, node;
     let currentChildren = rootChildren;
     for (const childNumLetter of path) {
       let childNumber = parseInt(childNumLetter);

@@ -27,7 +27,9 @@ _generateAllConditionFromFeatures = (features, allDataFromFeatures) => {
 _getCurrentNumberOfConditions = () => {
   let currentNumberOfConditions = 0;
   let features = Object.keys(currentAllConditions);
-  console.log("Current number of features: " + features.length);
+  //console.log("Current number of features: " + features.length);
+  //console.log(features);
+  
   for (const feature of features) {
     let current = currentAllConditions[feature];
     let types = Object.keys(current)
@@ -40,12 +42,12 @@ _getCurrentNumberOfConditions = () => {
 }
 
 _excludeCondition = (feature, type, value) => {
-  console.log("Before excluding Current number of features: " + _getCurrentNumberOfConditions());
-  //console.log(Object.keys(currentAllConditions));
-  //console.log("Current conditions: ");
+  //console.log("Before excluding Current number of features: " + _getCurrentNumberOfConditions());
+  ////console.log(Object.keys(currentAllConditions));
+  ////console.log("Current conditions: ");
 
   let currentFeatureOfCond = currentAllConditions[feature][type];
-  //console.log(currentFeatureOfCond);
+  ////console.log(currentFeatureOfCond);
 
   if (type === "equ") {
     if (currentFeatureOfCond.data.length === 2) {
@@ -55,10 +57,10 @@ _excludeCondition = (feature, type, value) => {
     }
   } else {
     currentAllConditions[feature][type].data = currentFeatureOfCond.data.filter(
-      i => type === 'lte' ? i >= value : i <= value
+      i => type === 'lte' ? i > value : i < value
     )
   }
-  console.log("After exluding Current number of features: " + _getCurrentNumberOfConditions());
+  //console.log("After exluding Current number of features: " + _getCurrentNumberOfConditions());
 };
 
 _getNumberOfEachClasses = (rows, columnOfClass, class1, class2) => {
@@ -88,9 +90,8 @@ _splitByCondition = (rowNumbers, feature, type, compareTo) => {
   let rowWithConditionMet = [],
     rowWithConditionNotMet = [],
     featureSpecificColumn = featureData[feature].data;
-
-  //console.log("Number of rows: "+featureSpecificColumn.length);
-  //console.log(currentAllConditions[feature][type]);
+  ////console.log("Number of rows: "+featureSpecificColumn.length);
+  ////console.log(currentAllConditions[feature][type]);
   for (let index = 0; index < rowNumbers.length; index++) {
     const data = featureSpecificColumn[rowNumbers[index]];
     if (currentAllConditions[feature][type].check(data, compareTo)) {
@@ -121,27 +122,39 @@ _getEntropyFromRows = (rows, class1, class2) => {
 }
 
 _getBestConditionWithEntropy = (rowNumbers, class1, class2) => {
+  //console.log("Got In");
   let features = Object.keys(currentAllConditions);
-  let bestCondition, minEntropy = 1.1,
-    posNode, negNode;
+  //console.log(features);
+  let bestCondition, minEntropy = 11111,
+    posNode, negNode, splitFound = false;
   for (const feature of features) {
     let conditionTypes = Object.keys(currentAllConditions[feature]);
-    // console.log("featrue: " + feature + " condition types:");
-    // console.log(conditionTypes);
+    //console.log("featrue: " + feature + " condition types:");
+    //console.log(conditionTypes);
     for (const type of conditionTypes) {
+      
       let allPossibleValues = currentAllConditions[feature][type].data;
       for (const value of allPossibleValues) {
         let splitedData = _splitByCondition(rowNumbers, feature, type, value);
         let positiveRows = splitedData.positiveRows,
           negativeRows = splitedData.negativeRows;
-        let posRowsEntropy = _getEntropyFromRows(positiveRows, class1, class2),
-          negRowsEntropy = _getEntropyFromRows(negativeRows, class1, class2);
+        //console.log(positiveRows.length + " " + negativeRows.length);
+        let posRowsEntropy = _getEntropyFromRows(positiveRows, class1, class2) || -100,
+          negRowsEntropy = _getEntropyFromRows(negativeRows, class1, class2) || -100;
+        let netEntropy;
+        if (posRowsEntropy === -100 || negRowsEntropy === -100) {
+          continue;
+        } 
         let numOfPosRows = positiveRows.length,
-          numOfNegRows = negativeRows.length;
-        let total = numOfNegRows + numOfPosRows;
-        //console.log("Total: " + total);
-        let netEntropy = ((numOfPosRows / total) * posRowsEntropy) + ((numOfNegRows / total) * negRowsEntropy);
+            numOfNegRows = negativeRows.length;
+          let total = numOfNegRows + numOfPosRows;
+          ////console.log("Total: " + total);
+          netEntropy = ((numOfPosRows / total) * posRowsEntropy) + ((numOfNegRows / total) * negRowsEntropy);
+          //console.log("Net entropy: " + netEntropy);
+        
         if (netEntropy < minEntropy) {
+          //console.log("One min");
+          splitFound = true;
           minEntropy = netEntropy;
           bestCondition = {
             feature: feature,
@@ -161,16 +174,17 @@ _getBestConditionWithEntropy = (rowNumbers, class1, class2) => {
     }
   }
   const bestResult = {
+    splitFound: splitFound,
     bestCondition: bestCondition,
     posNode: posNode,
     negNode: negNode,
     minEntropy: minEntropy
   }
-  //console.log(" Best result: ");
-  // console.log(minEntropy);
-  // console.log(posNode.entropy);
-  // console.log(negNode.entropy);
-  //console.log(bestResult.bestCondition);
+  ////console.log(" Best result: ");
+  // //console.log(minEntropy);
+  // //console.log(posNode.entropy);
+  // //console.log(negNode.entropy);
+  ////console.log(bestResult.bestCondition);
   return bestResult;
 }
 
@@ -193,11 +207,11 @@ _initDecisionTree = (columnOfClass, class1, class2) => {
     return rows;
   })(columnOfClass.length);
   let numberOfEachClasses = _getNumberOfEachClasses(allRows, columnOfClass, class1, class2);
-  //console.log(numberOfEachClasses);
+  ////console.log(numberOfEachClasses);
   let numberOfClass1 = numberOfEachClasses.numberOfClass1,
     numberOfClass2 = numberOfEachClasses.numberOfClass2;
   let rootEntropy = _calculateEntropy(numberOfClass1, numberOfClass2);
-  
+
   return [new decisionTreeModel(rootEntropy, allRows), allRows]
 }
 
@@ -208,34 +222,41 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
   let classes = _getAllUniqueValues(columnOfClass);
   let class1 = classes[0],
     class2 = classes[1];
-  console.log("Features: " + features);
-  console.log("class1: " + class1 + " class2: " + class2 + " Number Of rows: " + columnOfClass.length);
-  
+  //console.log("Features: " + features);
+  //console.log("class1: " + class1 + " class2: " + class2 + " Number Of rows: " + columnOfClass.length);
+
   for (const feature of features) {
-    console.log("Total values for " + feature + " :" + featureData[feature].data.length);
+    //console.log("Total values for " + feature + " :" + featureData[feature].data.length);
     featureData[feature].allUniqueValues = _getAllUniqueValues(featureData[feature].data);
-    console.log("Unique values: " + feature + " :" + featureData[feature].allUniqueValues.length);
+    //console.log("Unique values: " + feature + " :" + featureData[feature].allUniqueValues.length);
   }
-  currentAllConditions = _generateAllConditionFromFeatures(features, featureData);let res = _initDecisionTree(columnOfClass, class1, class2);
-  decisionTree =  res[0];
+  currentAllConditions = _generateAllConditionFromFeatures(features, featureData);
+  let res = _initDecisionTree(columnOfClass, class1, class2);
+  decisionTree = res[0];
   _splitRoot(res[1], class1, class2);
   let currentMinEntropy = 1.1,
     currentIteration = 1;
-  numberOfIteration = 3;
   while (currentMinEntropy > minEntropyAllowed && currentIteration < numberOfIteration && _getCurrentNumberOfConditions() !== 0) {
     let nodeToExpand = decisionTree.getExpandableWithHighestEntropy();
-    console.log("Length of node to be expanded: " + nodeToExpand.rowNumbers.length);
+    //console.log("Length of node to be expanded: " + nodeToExpand.rowNumbers.length);
     let bestSplit = _getBestConditionWithEntropy(nodeToExpand.rowNumbers, class1, class2);
+    let solutionFound = bestSplit.splitFound;
+    if(!solutionFound){
+      console.log("Exhausted all features at iteration: " + currentIteration);      
+      break;
+    }
+    _getCurrentNumberOfConditions();
+    // //console.log("Best split:::");
+    // //console.log(bestSplit);
     _excludeCondition(bestSplit.bestCondition.feature, bestSplit.bestCondition.type, bestSplit.bestCondition.value);
-    // console.log("Best split:::");
-    // console.log(bestSplit);
     decisionTree.expandNode(nodeToExpand, bestSplit.bestCondition, bestSplit.posNode, bestSplit.negNode);
     currentMinEntropy = bestSplit.minEntropy;
-    console.log("Node to expand: " + nodeToExpand.path);
+    //console.log("Node to expand: " + nodeToExpand.path);
     currentIteration++;
+    //console.log("Current iteration: " + currentIteration);
   }
-  decisionTree.printTree();
-
+  //decisionTree.printTree();
+  return decisionTree.getTree();
 }
 
 module.exports = {
