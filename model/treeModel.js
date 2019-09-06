@@ -71,6 +71,14 @@ class TreeModel{
     return this.currentNodeNumber;   
   }
 
+  hasExpandable(){
+    return this.expandableNodePaths.length > 0;
+  }
+
+  removeExpandable(expandablePath){
+    this.expandableNodePaths.splice(this.expandableNodePaths.indexOf(expandablePath), 1);   
+  }
+
   getExpandableWithHighestEntropy(){
     let maxEntropy = -1.1, expandableNodeWithMaxEntropy;
     for (const path of this.expandableNodePaths) {

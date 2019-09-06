@@ -122,7 +122,6 @@ _getEntropyFromRows = (rows, class1, class2) => {
 }
 
 _getBestConditionWithEntropy = (rowNumbers, class1, class2) => {
-  //console.log("Got In");
   let features = Object.keys(currentAllConditions);
   //console.log(features);
   let bestCondition, minEntropy = 11111,
@@ -131,8 +130,7 @@ _getBestConditionWithEntropy = (rowNumbers, class1, class2) => {
     let conditionTypes = Object.keys(currentAllConditions[feature]);
     //console.log("featrue: " + feature + " condition types:");
     //console.log(conditionTypes);
-    for (const type of conditionTypes) {
-      
+    for (const type of conditionTypes) {  
       let allPossibleValues = currentAllConditions[feature][type].data;
       for (const value of allPossibleValues) {
         let splitedData = _splitByCondition(rowNumbers, feature, type, value);
@@ -238,12 +236,19 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
     currentIteration = 1;
   while (currentMinEntropy > minEntropyAllowed && currentIteration < numberOfIteration && _getCurrentNumberOfConditions() !== 0) {
     let nodeToExpand = decisionTree.getExpandableWithHighestEntropy();
-    //console.log("Length of node to be expanded: " + nodeToExpand.rowNumbers.length);
+    if(!nodeToExpand) break;
     let bestSplit = _getBestConditionWithEntropy(nodeToExpand.rowNumbers, class1, class2);
     let solutionFound = bestSplit.splitFound;
     if(!solutionFound){
-      console.log("Exhausted all features at iteration: " + currentIteration);      
-      break;
+      decisionTree.removeExpandable(nodeToExpand.path);
+      if(decisionTree.hasExpandable){
+        console.log("Searching other nodes...");
+        continue;
+      }
+      else{
+        console.log("Exhausted all features at iteration: " + currentIteration);      
+        break;
+      }
     }
     _getCurrentNumberOfConditions();
     // //console.log("Best split:::");
@@ -255,6 +260,7 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
     currentIteration++;
     //console.log("Current iteration: " + currentIteration);
   }
+  console.log("Broke at iteration: " + currentIteration);
   //decisionTree.printTree();
   return decisionTree.getTree();
 }

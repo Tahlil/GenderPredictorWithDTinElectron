@@ -74,7 +74,7 @@ nodeEnter.append('circle')
   .attr('class', 'node')
   .attr('r', 1e-6)
   .style("fill", function(d) {
-      return d._children ? "lightsteelblue" : "#fff";
+      return d._children ? "lightsteelblue" : "#403";
   });
 
 // Add labels for the nodes
@@ -96,7 +96,7 @@ nodeEnter.append('text')
     }
     let entropy = (Math.floor(parseFloat(d.data.entropy) * 100) / 100).toFixed(2);
     return d.data.name + ": \n" + entropy+"\n"+conditionPart; 
-  });
+  }).attr("fill", "blue");
 
 // UPDATE
 var nodeUpdate = nodeEnter.merge(node);
@@ -112,7 +112,7 @@ nodeUpdate.transition()
 nodeUpdate.select('circle.node')
 .attr('r', 10)
 .style("fill", function(d) {
-    return d._children ? "lightsteelblue" : "#fff";
+    return d._children ? "lightsteelblue" : "#403";
 })
 .attr('cursor', 'pointer');
 
