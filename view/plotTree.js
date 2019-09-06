@@ -61,6 +61,14 @@ nodes.forEach(function(d){ d.y = d.depth * 180});
 var node = svg.selectAll('g.node')
   .data(nodes, function(d) {return d.id || (d.id = ++i); });
 
+
+  svg.append("text")
+  .attr("x", (width / 2))             
+  .attr("y", 0 - (margin.top / 2))
+  .attr("text-anchor", "middle")  
+  .style("font-size", "16px") 
+  .style("text-decoration", "underline")  
+  .text("Decision Tree"); 
 // Enter any new modes at the parent's previous position.
 var nodeEnter = node.enter().append('g')
   .attr('class', 'node')
@@ -77,6 +85,7 @@ nodeEnter.append('circle')
       return d._children ? "lightsteelblue" : "#403";
   });
 
+
 // Add labels for the nodes
 nodeEnter.append('text')
   .attr("dy", ".35em")
@@ -88,7 +97,10 @@ nodeEnter.append('text')
   })
   .text(function(d) {
     let c = d.data.condition, symbol, conditionPart="";
-    if(c !== null){
+    if(typeof c === "string"){
+      conditionPart = c;
+    }
+    else{
       if(c.type === "equ") symbol = "=";
       else if(c.type === "gte") symbol = ">";
       else if(c.type === "lte") symbol = "<";
@@ -96,7 +108,7 @@ nodeEnter.append('text')
     }
     let entropy = (Math.floor(parseFloat(d.data.entropy) * 100) / 100).toFixed(2);
     return d.data.name + ": \n" + entropy+"\n"+conditionPart; 
-  }).attr("fill", "blue");
+  }).attr("fill", "#08b");
 
 // UPDATE
 var nodeUpdate = nodeEnter.merge(node);

@@ -14,6 +14,7 @@ class DesktopApp {
     this.ipcMain = ipcMain;
     this.setUpApp();
     this.setUpAllListener();
+    this.currentDecisionTree = null;
     this.allData = readData.getNameToGenderData();
   }
   
@@ -70,6 +71,7 @@ class DesktopApp {
         let minEntropy = hyperParameters.minEntropy, numberOfIteration = hyperParameters.numberOfIteration, predictors = hyperParameters.predictors;
         let extractedFeatures = featureExtractUtil.extractFeatures(predictors, allData.columnOfNames);
         const decisionTree = conTreeUtil.constructTree(extractedFeatures, allData.columnOfGenders, minEntropy, numberOfIteration);
+        this.currentDecisionTree = decisionTree;
         console.log("sending to UI...");
         event.sender.send('end-construct-tree', decisionTree);
       }) 

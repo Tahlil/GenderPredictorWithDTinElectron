@@ -12,7 +12,7 @@ class TreeModel{
     };
     this.currentNodeNumber = 0;
     this.expandableNodePaths = [];
-  }
+}
 
   getTree(){
     return this.decisionTree;
@@ -35,12 +35,30 @@ class TreeModel{
     this._recursivelyPrintNodeAndChildren(this.decisionTree);
   }
 
-  _newNode(parent, path, rows, entropy){
+  _getLeafCondition(condition, path){
+    let conditionTrue = path[path.length-1] == "1" ? true : false;
+    if(condition.type === "equ"){
+      return conditionTrue ? "Has " + condition.feature : "No " + condition.feature;
+    }
+    else if(condition.type === "gte"){
+      return conditionTrue ? condition.feature + ">=" + condition.value : condition.feature + "<" + condition.value;
+
+    }
+    else if(condition.type === "lte"){
+      return conditionTrue ? condition.feature + "<=" + condition.value : condition.feature + ">" + condition.value;
+    }
+    else{
+      log.error("Unknown attribute type.");
+    }
+  }
+
+  _newNode(parent, path, rows, entropy, bestCondition){
+    let condition= this._getLeafCondition(bestCondition, path);
     let nextNodeNumber = this.getNextNodeNumber();
     return {
       name: nextNodeNumber, 
       parent: parent,
-      condition: null,
+      condition: condition,
       path: path,
       rowNumbers: [...rows],
       entropy: entropy,
@@ -52,8 +70,8 @@ class TreeModel{
     this.expandableNodePaths = ["0", "1"];
     this.decisionTree.condition = bestCondition;
     this.decisionTree.rowNumbers = [];
-    this.decisionTree.children[0] = this._newNode(0, "0", leftNode.rows, leftNode.entropy);
-    this.decisionTree.children[1] = this._newNode(0, "1", rightNode.rows, rightNode.entropy)
+    this.decisionTree.children[0] = this._newNode(0, "0", leftNode.rows, leftNode.entropy,bestCondition);
+    this.decisionTree.children[1] = this._newNode(0, "1", rightNode.rows, rightNode.entropy,bestCondition)
   }
 
   expandNode(node, bestCondition, rightNode, leftNode){
@@ -62,8 +80,8 @@ class TreeModel{
     this.expandableNodePaths.splice(this.expandableNodePaths.indexOf(node.path), 1);  
     let newExpandables = [node.path+"0", node.path+"1"]
     this.expandableNodePaths = [...this.expandableNodePaths, ...newExpandables]; 
-    node.children[0] = this._newNode(node.name, newExpandables[0], leftNode.rows, leftNode.entropy);
-    node.children[1] = this._newNode(node.name, newExpandables[1], rightNode.rows, rightNode.entropy)
+    node.children[0] = this._newNode(node.name, newExpandables[0], leftNode.rows, leftNode.entropy,bestCondition);
+    node.children[1] = this._newNode(node.name, newExpandables[1], rightNode.rows, rightNode.entropy,bestCondition)
   }
 
   getNextNodeNumber(){
