@@ -166,12 +166,12 @@
       });
 
       ipcRenderer.on("asynchronous-reply", (event, data) => {
-        plotData(data);
+        //plotData(data);
       });
 
       $("#test").click(function (e) { 
         e.preventDefault();
-        ipcRenderer.send("test-data", numberOfData);
+        ipcRenderer.send("test-data", "");
       });
       
       ipcRenderer.on("end-construct-tree", (event, decisionTree) => {

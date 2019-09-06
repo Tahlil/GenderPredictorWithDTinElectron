@@ -178,11 +178,11 @@ _getBestConditionWithEntropy = (rowNumbers, class1, class2) => {
     negNode: negNode,
     minEntropy: minEntropy
   }
-  ////console.log(" Best result: ");
-  // //console.log(minEntropy);
-  // //console.log(posNode.entropy);
-  // //console.log(negNode.entropy);
-  ////console.log(bestResult.bestCondition);
+  //  console.log(" Best result: ");
+  //  console.log(minEntropy);
+  //  console.log(posNode.entropy);
+  //  console.log(negNode.entropy);
+  //  console.log(bestResult.bestCondition);
   return bestResult;
 }
 
@@ -205,12 +205,11 @@ _initDecisionTree = (columnOfClass, class1, class2) => {
     return rows;
   })(columnOfClass.length);
   let numberOfEachClasses = _getNumberOfEachClasses(allRows, columnOfClass, class1, class2);
-  ////console.log(numberOfEachClasses);
+  //console.log(numberOfEachClasses);
   let numberOfClass1 = numberOfEachClasses.numberOfClass1,
     numberOfClass2 = numberOfEachClasses.numberOfClass2;
   let rootEntropy = _calculateEntropy(numberOfClass1, numberOfClass2);
-
-  return [new decisionTreeModel(rootEntropy, allRows), allRows]
+  return [new decisionTreeModel(rootEntropy, allRows, class1, class2), allRows]
 }
 
 constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIteration) => {
@@ -250,7 +249,7 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
         break;
       }
     }
-    _getCurrentNumberOfConditions();
+    //_getCurrentNumberOfConditions();
     // //console.log("Best split:::");
     // //console.log(bestSplit);
     _excludeCondition(bestSplit.bestCondition.feature, bestSplit.bestCondition.type, bestSplit.bestCondition.value);
@@ -262,7 +261,7 @@ constructTree = (extractedFeatures, columnOfClass, minEntropyAllowed, numberOfIt
   }
   console.log("Broke at iteration: " + currentIteration);
   //decisionTree.printTree();
-  return decisionTree.getTree();
+  return decisionTree;
 }
 
 module.exports = {

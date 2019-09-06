@@ -1,6 +1,6 @@
 class TreeModel{
   decisionTree;
-  constructor(rootEntropy, allRows) {
+  constructor(rootEntropy, allRows, class1, class2) {
     this.decisionTree = {
       "name": 0, //root
       parent: null,
@@ -12,7 +12,9 @@ class TreeModel{
     };
     this.currentNodeNumber = 0;
     this.expandableNodePaths = [];
-}
+    this.class1 = class1;
+    this.class2 = class2;
+  }
 
   getTree(){
     return this.decisionTree;
@@ -42,7 +44,6 @@ class TreeModel{
     }
     else if(condition.type === "gte"){
       return conditionTrue ? condition.feature + ">=" + condition.value : condition.feature + "<" + condition.value;
-
     }
     else if(condition.type === "lte"){
       return conditionTrue ? condition.feature + "<=" + condition.value : condition.feature + ">" + condition.value;
@@ -72,6 +73,52 @@ class TreeModel{
     this.decisionTree.rowNumbers = [];
     this.decisionTree.children[0] = this._newNode(0, "0", leftNode.rows, leftNode.entropy,bestCondition);
     this.decisionTree.children[1] = this._newNode(0, "1", rightNode.rows, rightNode.entropy,bestCondition)
+  }
+
+  _getClass(rowNumbers, genderBasedOnTraindata){
+    let numberOfClass1=0, numberOfClass2=0;
+    //console.log(this.class1 + " " + this.class2);
+    for (let i = 0; i < rowNumbers.length; i++) {
+      let rowNumber = rowNumbers[i];
+      console.log(genderBasedOnTraindata[rowNumber]);
+      if(genderBasedOnTraindata[rowNumber] === this.class1) {
+        numberOfClass1++;
+      }
+      else if(genderBasedOnTraindata[rowNumber] === this.class2) {
+        console.log(this.class2);
+        numberOfClass2++;
+      }
+      else{
+        log.error("Class not found.");
+      } 
+    }
+    return numberOfClass1 < numberOfClass2 ? this.class1 : this.class2;
+  }
+
+  _compare(condition, individualData){
+    let value = condition.value, compareWith = individualData[condition.feature];
+    if(condition.type === "equ"){
+      console.log(value);
+      console.log(compareWith);
+      return value === compareWith;
+    }
+    else if(condition.type === "lte"){
+      return compareWith <= value;
+    }
+    else if(condition.type === "gte"){
+      return compareWith >= value;
+    }
+  }
+
+  predictClass(individualData, genderBasedOnTraindata){
+    let currentNode = this.decisionTree;
+    let currentCondition= currentNode.condition;
+    while(! typeof currentCondition === "string"){
+      let nextChildren = this._compare(currentCondition, individualData) ? 1 : 0;
+      currentNode = currentNode.children[nextChildren];
+      currentCondition = currentNode.condition;
+    }
+    return this._getClass(currentNode.rowNumbers, genderBasedOnTraindata);
   }
 
   expandNode(node, bestCondition, rightNode, leftNode){
