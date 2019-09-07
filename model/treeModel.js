@@ -77,29 +77,30 @@ class TreeModel{
 
   _getClass(rowNumbers, genderBasedOnTraindata){
     let numberOfClass1=0, numberOfClass2=0;
+    //console.log("Row numbers: " +rowNumbers.length);
     //console.log(this.class1 + " " + this.class2);
     for (let i = 0; i < rowNumbers.length; i++) {
       let rowNumber = rowNumbers[i];
-      console.log(genderBasedOnTraindata[rowNumber]);
+      //console.log(genderBasedOnTraindata[rowNumber]);
       if(genderBasedOnTraindata[rowNumber] === this.class1) {
         numberOfClass1++;
       }
       else if(genderBasedOnTraindata[rowNumber] === this.class2) {
-        console.log(this.class2);
+        //console.log(this.class2);
         numberOfClass2++;
       }
       else{
         log.error("Class not found.");
       } 
     }
-    return numberOfClass1 < numberOfClass2 ? this.class1 : this.class2;
+    return numberOfClass1 <= numberOfClass2 ? this.class2 : this.class1;
   }
 
   _compare(condition, individualData){
     let value = condition.value, compareWith = individualData[condition.feature];
     if(condition.type === "equ"){
-      console.log(value);
-      console.log(compareWith);
+      //console.log(value);
+      //console.log(compareWith);
       return value === compareWith;
     }
     else if(condition.type === "lte"){
@@ -113,11 +114,13 @@ class TreeModel{
   predictClass(individualData, genderBasedOnTraindata){
     let currentNode = this.decisionTree;
     let currentCondition= currentNode.condition;
-    while(! typeof currentCondition === "string"){
+    while(! (typeof currentCondition === "string")){
       let nextChildren = this._compare(currentCondition, individualData) ? 1 : 0;
       currentNode = currentNode.children[nextChildren];
       currentCondition = currentNode.condition;
     }
+    //console.log(currentNode);
+    
     return this._getClass(currentNode.rowNumbers, genderBasedOnTraindata);
   }
 

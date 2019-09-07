@@ -64,28 +64,58 @@ class DesktopApp {
     test(){
       let totalTestData = this.testData.columnOfGenders.length, numberOfCorrectPrediction=0;
       let extractedFeatureOfTestData = featureExtractUtil.extractFeatures(this.features, this.testData.columnOfNames);
+      let truePositive=0, trueNegative=0, falsePositive=0, falseNegative=0;
+      //let numberOfPredictedFemale=0, numberOfPredictedMale=0;
+      let resultTable = []; 
       console.log("Total test data: " + totalTestData);
       let current = totalTestData;
       while(current > 0){
         current--;
         let individualData = {};
         for (const feature of this.features) {
-          individualData[feature] =extractedFeatureOfTestData[feature].data[current];
+          individualData[feature] = extractedFeatureOfTestData[feature].data[current];
         }
-        let name = this.testData.columnOfNames[current], actualGender =this.testData.columnOfGenders[current], predictedGender, result;
-        predictedGender = this.currentDecisionTree.predictClass(individualData, this.trainData.columnOfGenders);
-        //console.log("Predicted: " + predictedGender);
-        //console.log("Actual: " + actualGender);
-        //console.log("Current: " + current);
-        
-        if(predictedGender === actualGender){
-          numberOfCorrectPrediction++;
+        let actualGender =this.testData.columnOfGenders[current];
+        let predictedGender = this.currentDecisionTree.predictClass(individualData, this.trainData.columnOfGenders);
+        if (predictedGender === this.currentDecisionTree.class1) {
+          predictedGender === actualGender ? truePositive++ : falsePositive++;
+        }
+        else if(predictedGender === this.currentDecisionTree.class2){
+          predictedGender === actualGender ? trueNegative++ : falseNegative++;
+        } 
+        // if(predictedGender === actualGender){
+        //   numberOfCorrectPrediction++;
+        // }
+        let name = this.testData.columnOfNames[current];
+        resultTable[current] = {
+          id: current,
+          name: name,
+          predicted: predictedGender,
+          actual: actualGender
         }
       }
-      console.log("Number of corrent prediction: " + numberOfCorrectPrediction);
-      
+      numberOfCorrectPrediction = trueNegative+ truePositive;
+      console.log("Number of correct prediction: " + numberOfCorrectPrediction);
+      //console.log("Number of correct prediction: " + (trueNegative+ truePositive));
+
+      //console.log("Predicted Female: "+ numberOfPredictedFemale + " Predicted Male" + numberOfPredictedMale);
+      let precision = (truePositive/(truePositive+falsePositive))*100;
+      let recall = (truePositive/(truePositive+falseNegative))*100;
       let performance = (numberOfCorrectPrediction/totalTestData)*100;
+      console.log("Precision: " + precision + " %");
+      console.log("Recall: " + recall + " %");
       console.log("Correct percentage: " + performance + " %");
+      return {
+        resultTable: resultTable,
+        numberOfCorrectPrediction: numberOfCorrectPrediction,
+        performance: performance,
+        truePositive: truePositive,
+        trueNegative: trueNegative,
+        falsePositive: falsePositive,
+        falseNegative: falseNegative,
+        precision: precision,
+        recall: recall
+      }
     }
 
     setUpTestListener(){
