@@ -91,7 +91,8 @@ class DesktopApp {
           id: current,
           name: name,
           predicted: predictedGender,
-          actual: actualGender
+          actual: actualGender,
+          hasPredicted: predictedGender === actualGender
         }
       }
       numberOfCorrectPrediction = trueNegative+ truePositive;
