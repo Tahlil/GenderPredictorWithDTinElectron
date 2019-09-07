@@ -97,7 +97,7 @@ class DesktopApp {
       numberOfCorrectPrediction = trueNegative+ truePositive;
       console.log("Number of correct prediction: " + numberOfCorrectPrediction);
       //console.log("Number of correct prediction: " + (trueNegative+ truePositive));
-
+      let incorrectPrediction = totalTestData - numberOfCorrectPrediction;
       //console.log("Predicted Female: "+ numberOfPredictedFemale + " Predicted Male" + numberOfPredictedMale);
       let precision = (truePositive/(truePositive+falsePositive))*100;
       let recall = (truePositive/(truePositive+falseNegative))*100;
@@ -107,14 +107,16 @@ class DesktopApp {
       console.log("Correct percentage: " + performance + " %");
       return {
         resultTable: resultTable,
+        totalTestData: totalTestData,
         numberOfCorrectPrediction: numberOfCorrectPrediction,
-        performance: performance,
+        incorrectPrediction: incorrectPrediction, 
+        performance: performance.toFixed(2),
         truePositive: truePositive,
         trueNegative: trueNegative,
         falsePositive: falsePositive,
         falseNegative: falseNegative,
-        precision: precision,
-        recall: recall
+        precision: precision.toFixed(2),
+        recall: recall.toFixed(2)
       }
     }
 
@@ -122,8 +124,7 @@ class DesktopApp {
       this.ipcMain.on('test-data', (event, _) => {
         console.log("Testing performance...");
         let testResult = this.test();
-        
-        event.sender.send('asynchronous-reply', {result: testResult});
+        event.sender.send('asynchronous-reply', {result: testResult, success:true});
       })
     }
 
@@ -168,8 +169,10 @@ class DesktopApp {
         let extractedFeatures = featureExtractUtil.extractFeatures(predictors, this.allData.columnOfNames);
         const decisionTree = conTreeUtil.constructTree(extractedFeatures, this.allData.columnOfGenders, minEntropy, numberOfIteration);
         this.currentDecisionTree = decisionTree;
+        let totalTrainingData = this.trainData.columnOfNames.length;
         console.log("sending to UI...");
-        event.sender.send('end-construct-tree', decisionTree.getTree());
+        let tree = decisionTree.getTree();
+        event.sender.send('end-construct-tree', {tree: tree, totalTrainingData: totalTrainingData});
       }) 
     }
 

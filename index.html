@@ -15,6 +15,9 @@
     <script>
       let $ = require("jquery");
     </script>
+    <link href="./node_modules/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="./node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
+    
     <script>
       require("popper.js");
     </script>
@@ -123,10 +126,14 @@
       </div>
       </div>
     </section>
-    <div id="result"></div>
+    <div id="treeAndResult" class="p-2"></div>
+    
+    </div>
+
     <script>var d3 = require("d3");</script>
     <script src="view/plotTree.js"></script>
     <script src="view/plotPerformance.js"></script>
+    
     <script>
       let currentNumberPlot = 0;
         $('input[name=all]').change(function(){
@@ -146,7 +153,10 @@
           }
         });
       const { ipcRenderer } = require("electron");
-      $("#conTree").click(function (e) { 
+      //'+ +'
+      $("#conTree").click(function (e) {
+        currentNumberPlot++;
+        $("#treeAndResult").append('<div id="tree'+ currentNumberPlot +'"></div><div id="result'+ currentNumberPlot +'"><div id="res-table'+ currentNumberPlot +'"></div>'); 
         e.preventDefault();
         var predictors = [];
         $.each($("input[name='optcheck']:checked"), function(){            
@@ -161,12 +171,23 @@
           hyperParameters.minEntropy =  parseFloat($('#met').val());
           hyperParameters.predictors = predictors;
           hyperParameters.testSplitRatio = parseInt($('#tsr').val());
+          $("#tree" + currentNumberPlot).append('<hr><p id="hyps'+ currentNumberPlot+'" class="p-3 h5">Tree With HyperParameters: <span class="badge badge-primary mr-2">Min Entropy: '+ hyperParameters.minEntropy +'</span><span class="badge badge-primary mr-2">Max Iteration: '+ hyperParameters.numberOfIteration +'</span><span class="badge badge-primary mr-2">Predictors: '+ predictors +'</span><span class="badge badge-primary mr-2">Percentage of test data: '+ hyperParameters.testSplitRatio +'</span></p>');
           ipcRenderer.send("construct-tree", hyperParameters);
         }
       });
 
-      ipcRenderer.on("asynchronous-reply", (event, data) => {
-        //plotData(data);
+      ipcRenderer.on("asynchronous-reply", (event, res) => {
+        if(res.success){
+          let performanceResult = res.result;
+          $("#result"+currentNumberPlot ).append( ' <h4>Result calculated! Here are the result for the test data 🙌 </h4> ' + '<div class="row"> <div class="col-md-4"> <h2 class="border border-primary rounded pb-1"> ' + 'Total Number of Test Data: ' +'<span class="badge badge-info">' + performanceResult.totalTestData +'</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Correctly predicted: ' +'<span class="badge badge-success">' + performanceResult.numberOfCorrectPrediction +'</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Incorrect Prediction: ' +'<span class="badge badge-danger">' + performanceResult.incorrectPrediction +'</span></h2></div></div>' + '<div class="row"> <div class="col-md-4"> <h2 class="border border-primary rounded pb-1"> ' + 'Performance: ' +'<span class="badge badge-primary">' + performanceResult.performance +' %</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Precision: ' +'<span class="badge badge-primary">' + performanceResult.precision +' %</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Recall: ' +'<span class="badge badge-primary">' + performanceResult.recall +' %</span></h2></div></div><hr><hr>');
+            var documentHeight=document.documentElement.offsetHeight;
+            var viewportHeight=window.innerHeight;
+            window.scrollTo(0, 2500);
+            plotResult(performanceResult.res);
+        }
+        else{
+          alert("Something went wrong 🤔");
+        }
       });
 
       $("#test").click(function (e) { 
@@ -174,21 +195,12 @@
         ipcRenderer.send("test-data", "");
       });
       
-      ipcRenderer.on("end-construct-tree", (event, decisionTree) => {
+      ipcRenderer.on("end-construct-tree", (event, allInfo) => {
         console.log("plot Tree will be called:");
-        plotTree(decisionTree);
-        //if(res.success){
-          // $( "#result" ).append( "<h5>Cost function: </h5><div id='plot" + currentNumberPlot + "'></div><p> <h4>Great! Above is the cost function again each iteration. Here is the other results 🙌 </h4> <br>" + res.summary + "<p> <br>  " );
-          //   var documentHeight=document.documentElement.offsetHeight;
-          //   var viewportHeight=window.innerHeight;
-          //   window.scrollTo(0, 2500);
-          //   plotCostFunction(res.result.costs, currentNumberPlot);
-          //   currentNumberPlot++;
-        // }
-        // else{
-        //   alert("Something went wrong 🤔");
-        // }
+        $("#hyps" + currentNumberPlot).append('<span class="ml-2 badge badge-primary">Number of Training Data: '+ allInfo.totalTrainingData+'</span>')
+        plotTree(allInfo.tree, currentNumberPlot);
       });
     </script>
+    
   </body>
 </html>
