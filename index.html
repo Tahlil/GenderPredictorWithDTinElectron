@@ -156,7 +156,7 @@
       //'+ +'
       $("#conTree").click(function (e) {
         currentNumberPlot++;
-        $("#treeAndResult").append('<div id="tree'+ currentNumberPlot +'"></div><div id="result'+ currentNumberPlot +'"><div id="res-table'+ currentNumberPlot +'"></div>'); 
+        $("#treeAndResult").append('<div id="tree'+ currentNumberPlot +'"></div><div id="result'+ currentNumberPlot +'"></div><div id="res-table'+ currentNumberPlot +'"></div><hr><hr><hr>'); 
         e.preventDefault();
         var predictors = [];
         $.each($("input[name='optcheck']:checked"), function(){            
@@ -179,12 +179,12 @@
       ipcRenderer.on("asynchronous-reply", (event, res) => {
         if(res.success){
           let performanceResult = res.result;
-          $("#result"+currentNumberPlot ).append( ' <h4>Result calculated! Here are the result for the test data 🙌 </h4> ' + '<div class="row"> <div class="col-md-4"> <h2 class="border border-primary rounded pb-1"> ' + 'Total Number of Test Data: ' +'<span class="badge badge-info">' + performanceResult.totalTestData +'</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Correctly predicted: ' +'<span class="badge badge-success">' + performanceResult.numberOfCorrectPrediction +'</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Incorrect Prediction: ' +'<span class="badge badge-danger">' + performanceResult.incorrectPrediction +'</span></h2></div></div>' + '<div class="row"> <div class="col-md-4"> <h2 class="border border-primary rounded pb-1"> ' + 'Performance: ' +'<span class="badge badge-primary">' + performanceResult.performance +' %</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Precision: ' +'<span class="badge badge-primary">' + performanceResult.precision +' %</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Recall: ' +'<span class="badge badge-primary">' + performanceResult.recall +' %</span></h2></div></div><hr><h3>Confusion Matrix</h3> <div class="row"><div class="col-md-3"><h4 class="p-4 text-center">--</h4></div><div class="col-md-3"><h4 class="bg-light p-4 text-center">Positive</h4></div><div class="col-md-3"><h4 class="bg-light p-4 text-center">Negative</h4></div></div><div class="row"><div class="col-md-3"><h4 class="bg-light p-4 text-center">True</h4></div><div class="col-md-3"><h4 class="bg-success p-4 text-center">' + performanceResult.truePositive +'</h4></div><div class="col-md-3"><h4 class="bg-success p-4 text-center">' + performanceResult.trueNegative +'</h4></div></div><div class="row"><div class="col-md-3"><h4 class="bg-light p-4 text-center">False</h4></div><div class="col-md-3"><h4 class="bg-danger p-4 text-center">' + performanceResult.falsePositive +'</h4></div><div class="col-md-3"><h4 class="bg-danger p-4 text-center">' + performanceResult.falseNegative +'</h4></div></div> <hr><hr>');
+          $("#result"+currentNumberPlot ).append( ' <h4>Result calculated! Here are the result for the test data 🙌 </h4> ' + '<div class="row"> <div class="col-md-4"> <h2 class="border border-primary rounded pb-1"> ' + 'Total Number of Test Data: ' +'<span class="badge badge-info">' + performanceResult.totalTestData +'</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Correctly predicted: ' +'<span class="badge badge-success">' + performanceResult.numberOfCorrectPrediction +'</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Incorrect Prediction: ' +'<span class="badge badge-danger">' + performanceResult.incorrectPrediction +'</span></h2></div></div>' + '<div class="row"> <div class="col-md-4"> <h2 class="border border-primary rounded pb-1"> ' + 'Performance: ' +'<span class="badge badge-primary">' + performanceResult.performance +' %</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Precision: ' +'<span class="badge badge-primary">' + performanceResult.precision +' %</span></h2></div><div class="col-md-4"><h2 class="border border-primary rounded pb-1">' + 'Recall: ' +'<span class="badge badge-primary">' + performanceResult.recall +' %</span></h2></div></div><hr><h3>Confusion Matrix</h3> <div class="row"><div class="col-md-3"><h4 class="p-4 text-center">--</h4></div><div class="col-md-3"><h4 class="bg-light p-4 text-center">Positive</h4></div><div class="col-md-3"><h4 class="bg-light p-4 text-center">Negative</h4></div></div><div class="row"><div class="col-md-3"><h4 class="bg-light p-4 text-center">True</h4></div><div class="col-md-3"><h4 class="bg-success p-4 text-center">' + performanceResult.truePositive +'</h4></div><div class="col-md-3"><h4 class="bg-success p-4 text-center">' + performanceResult.trueNegative +'</h4></div></div><div class="row"><div class="col-md-3"><h4 class="bg-light p-4 text-center">False</h4></div><div class="col-md-3"><h4 class="bg-danger p-4 text-center">' + performanceResult.falsePositive +'</h4></div><div class="col-md-3"><h4 class="bg-danger p-4 text-center">' + performanceResult.falseNegative +'</h4></div></div><hr>');
           
             var documentHeight=document.documentElement.offsetHeight;
             var viewportHeight=window.innerHeight;
             window.scrollTo(0, 2500);
-            plotResult(performanceResult.res, currentNumberPlot);
+            plotResult(performanceResult.resultTable, currentNumberPlot);
         }
         else{
           alert("Something went wrong 🤔");
@@ -202,6 +202,5 @@
         plotTree(allInfo.tree, currentNumberPlot);
       });
     </script>
-    
   </body>
 </html>
