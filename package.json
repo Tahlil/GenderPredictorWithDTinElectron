@@ -27,6 +27,6 @@
     "tabulator-tables": "^4.4.1"
   },
   "devDependencies": {
-    "electron": "^6.0.7"
+    "electron": "^13.6.6"
   }
 }
