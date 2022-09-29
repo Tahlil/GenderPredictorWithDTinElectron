@@ -21,7 +21,7 @@
   "dependencies": {
     "bootstrap": "^4.1.3",
     "csvsync": "^1.2.0",
-    "d3": "^5.11.0",
+    "d3": "^7.6.1",
     "jquery": "^3.3.1",
     "popper.js": "^1.14.4",
     "tabulator-tables": "^4.4.1"
